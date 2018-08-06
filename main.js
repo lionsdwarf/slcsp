@@ -1,4 +1,5 @@
 const jsonifyCSV = require(`csvtojson`);
+const fs = require(`fs`);
 
 const PLANS_FILEPATH = `./plans.csv`;
 const ZIPS_FILEPATH = `./zips.csv`;
@@ -12,31 +13,31 @@ const parseCSVs = async function() {
   }
 }
 
-const calcSilverRatesByArea = function(plans) {
+const mapSilverRatesToArea = function(plans) {
   const silverRatesByArea = {};
-  plans.forEach(plan => {
-    if (plan.metal_level.toLowerCase() === `silver`) {
-      const stateExists = silverRatesByArea[plan.state];
-      const ratesListExists = stateExists && silverRatesByArea[plan.state][plan.rate_area];
+  plans.forEach(row => {
+    if (row.metal_level.toLowerCase() === `silver`) {
+      const stateExists = silverRatesByArea[row.state];
+      const ratesListExists = stateExists && silverRatesByArea[row.state][row.rate_area];
       if (!ratesListExists) {
         if (!stateExists) {
-          silverRatesByArea[plan.state] = {};
+          silverRatesByArea[row.state] = {};
         }
-        silverRatesByArea[plan.state][plan.rate_area] = [];
+        silverRatesByArea[row.state][row.rate_area] = [];
       }
-      silverRatesByArea[plan.state][plan.rate_area].push(plan.rate);
+      silverRatesByArea[row.state][row.rate_area].push(row.rate);
     }
   });
   return silverRatesByArea;
 }
 
-const calcRatesByZip = function(silverRatesByArea, zips) {
+const mapRatesToZip = function(silverRatesByArea, zips) {
   const ratesByZip = {};
-  zips.forEach(zip => {
-    const stateExists = silverRatesByArea[zip.state];
-    const ratesListExists = stateExists && silverRatesByArea[zip.state][zip.rate_area];
+  zips.forEach(row => {
+    const stateExists = silverRatesByArea[row.state];
+    const ratesListExists = stateExists && silverRatesByArea[row.state][row.rate_area];
     if (ratesListExists) {
-      ratesByZip[zip.zipcode] = silverRatesByArea[zip.state][zip.rate_area];
+      ratesByZip[row.zipcode] = silverRatesByArea[row.state][row.rate_area];
     }
   });
   return ratesByZip;
@@ -57,11 +58,11 @@ const calcSLCSPFromRates = function(rates) {
   return secondLowest;
 }
 
-const calcSLCSPByZip = function(ratesByZip, zips) {
-  zips.forEach(zip => {
-    const slcsp = ratesByZip[zip.zipcode] && calcSLCSPFromRates(ratesByZip[zip.zipcode]);
-    if (ratesByZip[zip.zipcode] && slcsp) {
-      zip.rate = slcsp;
+const mapSLCSPToZip = function(ratesByZip, zips) {
+  zips.forEach(row => {
+    const slcsp = ratesByZip[row.zipcode] && calcSLCSPFromRates(ratesByZip[row.zipcode]);
+    if (ratesByZip[row.zipcode] && slcsp) {
+      row.rate = slcsp;
     }
   });
   return zips;
@@ -69,17 +70,28 @@ const calcSLCSPByZip = function(ratesByZip, zips) {
 
 const calcSLCSP = async function() {
   const csvData = await parseCSVs();
-  const silverRatesByArea = calcSilverRatesByArea(csvData.plans);
-  const ratesByZip = calcRatesByZip(silverRatesByArea, csvData.zips);
-  const slcspByZip = calcSLCSPByZip(ratesByZip, csvData.slcsp);
+  const silverRatesByArea = mapSilverRatesToArea(csvData.plans);
+  const ratesByZip = mapRatesToZip(silverRatesByArea, csvData.zips);
+  const slcspByZip = mapSLCSPToZip(ratesByZip, csvData.slcsp);
   return slcspByZip;
 }
 
-const generateCSVSLCSP = async function() {
-  const slcspByZip = await calcSLCSP();
-  console.log(slcspByZip)
-  //write file
+const generateCSVString = function(slcspByZip) {
+  let csvString = ``;
+  slcspByZip.forEach(row => {
+    if (csvString === ``) {
+      csvString += `zipcode,rate\n`;
+    }
+    csvString += `${row.zipcode},${row.rate}\n`;
+  });
+  return csvString;
 }
 
-generateCSVSLCSP();
+const generateSLCSP = async function() {
+  const slcspByZip = await calcSLCSP();
+  const csvString = generateCSVString(slcspByZip);
+  fs.writeFileSync(SLCSP_FILEPATH, csvString);
+}
+
+generateSLCSP();
 
