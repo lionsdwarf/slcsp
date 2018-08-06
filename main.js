@@ -12,12 +12,28 @@ let parseCSVs = async function() {
   }
 }
 
-// let calcSilverRatesByRateArea = function() {
-
-// }
+let calcSilverRatesByArea = function(plans) {
+  const silverRatesByArea = {};
+  plans.forEach(plan => {
+    if (plan.metal_level.toLowerCase() === `silver`) {
+      const stateExists = silverRatesByArea[plan.state];
+      const ratesListExists = stateExists && silverRatesByArea[plan.state][plan.rate_area];
+      if (!ratesListExists){
+        if (!stateExists) {
+          silverRatesByArea[plan.state] = {};
+        }
+        silverRatesByArea[plan.state][plan.rate_area] = [];
+      }
+      silverRatesByArea[plan.state][plan.rate_area].push(plan.rate);
+    }
+  })
+  return silverRatesByArea;
+}
 
 let slcspCalc = async function() {
-  let csvData = await parseCSVs();
+  const csvData = await parseCSVs();
+  const silverRatesByArea = calcSilverRatesByArea(csvData.plans);
+  console.log(silverRatesByArea)
 }
 
 slcspCalc();
