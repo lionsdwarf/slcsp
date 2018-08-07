@@ -1,12 +1,17 @@
 let assert = require(`assert`);
 
 let data = require(`./data`);
-let funcs = require(`../main`);
+let util = require(`../util`);
+const {
+  mapAreasToSilverRates,
+  mapZipsToAreas,
+  calcSLCSPFromRates,
+} = util;
 
 describe(`functions: `, () => {
 
   describe(`mapAreasToSilverRates`, () => {
-    const srba = funcs.mapAreasToSilverRates(data.plans.input);
+    const srba = mapAreasToSilverRates(data.plans.input);
     it(`should map a list of silver plan rates to a rate area`, () => {
       assert.equal(srba.ME[1].length, 4);
       assert.equal(srba.ME[2].length, 1);
@@ -22,7 +27,7 @@ describe(`functions: `, () => {
   describe(`calcSLCSPFromRates`, () => {
     it(`should return the second lowest value in the list`, () => {
       for (let i in data.rates.inputs) {
-        const slcsp = funcs.calcSLCSPFromRates(data.rates.inputs[i]);
+        const slcsp = calcSLCSPFromRates(data.rates.inputs[i]);
         assert.equal(slcsp, data.rates.outputs[i]);
       }
     })
@@ -30,7 +35,7 @@ describe(`functions: `, () => {
 
   describe(`mapZipsToAreas`, () => {
     it(`should map a zip code to a list of all of it's rate areas`, () => {
-      assert.deepEqual(funcs.mapZipsToAreas(data.zips.input), data.zips.output);
+      assert.deepEqual(mapZipsToAreas(data.zips.input), data.zips.output);
     });
   });
 
