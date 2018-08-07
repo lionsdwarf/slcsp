@@ -75,7 +75,6 @@ const mapZipsToSLCSPs = function(zipsToRates, zips) {
 
 //retrieve second lowest value from rates list
 const calcSLCSPFromRates = function(rates) {
-  rates.length < 2 && console.log(rates)
   let lowest, secondLowest;
   rates.forEach(rate => {
     rate = parseFloat(rate);

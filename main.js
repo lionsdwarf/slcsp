@@ -1,14 +1,13 @@
 const jsonifyCSV = require(`csvtojson`);
 const fs = require(`fs`);
 
-const util = require(`./util`);
 const {
   mapAreasToSilverRates,
   mapZipsToRates,
   calcSLCSPFromRates,
   generateCSVString,
   mapZipsToSLCSPs,
-} = util;
+} = require(`./util`);
 
 const PLANS_FILEPATH = `./plans.csv`;
 const ZIPS_FILEPATH = `./zips.csv`;
