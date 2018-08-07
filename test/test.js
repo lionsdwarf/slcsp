@@ -5,8 +5,8 @@ let funcs = require(`../main`);
 
 describe(`functions: `, () => {
 
-  describe(`mapSilverRatesToArea`, () => {
-    const srba = funcs.mapSilverRatesToArea(data.plans.input);
+  describe(`mapAreasToSilverRates`, () => {
+    const srba = funcs.mapAreasToSilverRates(data.plans.input);
     it(`should map a list of silver plan rates to a rate area`, () => {
       assert.equal(srba.ME[1].length, 4);
       assert.equal(srba.ME[2].length, 1);

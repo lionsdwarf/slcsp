@@ -135,6 +135,4 @@ generateSLCSP();
 //exports for tests
 exports.mapAreasToSilverRates = mapAreasToSilverRates;
 exports.mapZipsToAreas = mapZipsToAreas;
-exports.mapZipsToRates = mapZipsToRates;
 exports.calcSLCSPFromRates = calcSLCSPFromRates;
-exports.mapZipsToSLCSPs = mapZipsToSLCSPs;
