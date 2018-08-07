@@ -37,6 +37,7 @@ const mapAreasToSilverRates = function(plans) {
   return areasToSilverRates;
 }
 
+// build rate area tuple
 const getRateArea = (zip) => `${zip.state} ${zip.rate_area}`;
 
 // we are concerned with zipcodes with multiple rate areas
