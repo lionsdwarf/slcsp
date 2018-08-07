@@ -4,7 +4,7 @@ const fs = require(`fs`);
 const PLANS_FILEPATH = `./plans.csv`;
 const ZIPS_FILEPATH = `./zips.csv`;
 const SLCSP_FILEPATH = `./slcsp.csv`;
-
+//load csv data as json
 const parseCSVs = async function() {
   return {
     plans: await jsonifyCSV().fromFile(PLANS_FILEPATH),
@@ -12,7 +12,9 @@ const parseCSVs = async function() {
     slcsp: await jsonifyCSV().fromFile(SLCSP_FILEPATH),
   }
 }
-
+// structure data as: {
+//   <zipcode>: [<silver rates arr>]
+// }
 const mapSilverRatesToArea = function(plans) {
   const silverRatesByArea = {};
   plans.forEach(row => {
@@ -31,12 +33,34 @@ const mapSilverRatesToArea = function(plans) {
   return silverRatesByArea;
 }
 
+const getRateArea = (zip) => `${zip.state} ${zip.rate_area}`;
+
+//we are concerned with zipcodes with multiple rate areas
+const mapZipsToAreas = function(zips) {
+  const zipsToAreas = {};
+  zips.forEach((zip) => {
+    if (!zipsToAreas[zip.zipcode]) {
+      zipsToAreas[zip.zipcode] = [getRateArea(zip)];
+    } else {
+      if (zipsToAreas[zip.zipcode].indexOf(getRateArea(zip)) === -1) {
+        zipsToAreas[zip.zipcode].push(getRateArea(zip));
+      }
+    }
+  });
+  return zipsToAreas;
+}
+//structure data as: {
+//   <zipcode>: [silver rates arr]
+// }
 const mapRatesToZip = function(silverRatesByArea, zips) {
   const ratesByZip = {};
+  //get zips in multiple rate areas
+  const zipsToAreas = mapZipsToAreas(zips);
   zips.forEach(row => {
     const stateExists = silverRatesByArea[row.state];
     const ratesListExists = stateExists && silverRatesByArea[row.state][row.rate_area];
-    if (ratesListExists) {
+    //ignore zips in multiple rate areas
+    if (ratesListExists && zipsToAreas[row.zipcode].length === 1) {
       ratesByZip[row.zipcode] = silverRatesByArea[row.state][row.rate_area];
     }
   });
@@ -44,8 +68,10 @@ const mapRatesToZip = function(silverRatesByArea, zips) {
 }
 
 const calcSLCSPFromRates = function(rates) {
+  rates.length < 2 && console.log(rates)
   let lowest, secondLowest;
   rates.forEach(rate => {
+    rate = parseFloat(rate);
     if (lowest === undefined) {
       lowest = rate;
     } else if (rate < lowest) {
@@ -95,3 +121,9 @@ const generateSLCSP = async function() {
 
 generateSLCSP();
 
+//exports for tests
+exports.mapSilverRatesToArea = mapSilverRatesToArea;
+exports.mapZipsToAreas = mapZipsToAreas;
+exports.mapRatesToZip = mapRatesToZip;
+exports.calcSLCSPFromRates = calcSLCSPFromRates;
+exports.mapSLCSPToZip = mapSLCSPToZip;
